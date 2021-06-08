@@ -6,6 +6,8 @@ from panda3d.core import Shader
 from panda3d.core import TextNode
 from panda3d.core import CardMaker
 from panda3d.core import TextureStage
+from panda3d.core import MeshDrawer
+from panda3d.core import ColorBlendAttrib
 from direct.actor.Actor import Actor
 
 from direct.gui.OnscreenText import OnscreenText
@@ -172,6 +174,20 @@ class Player(GameObject, ArmedObject):
             missileCounterRoot = self.uiRoot.attachNewNode(PandaNode("missile counter root"))
             print ("No missile counter root found!")
 
+        radarRoot = self.cockpit.find("**/radar")
+        if radarRoot is None or radarRoot.isEmpty():
+            radarRoot = self.uiRoot.attachNewNode(PandaNode("radar root"))
+            print ("No radar root found!")
+
+        self.radarDrawer = MeshDrawer()
+        self.radarDrawer.setBudget(4096)
+
+        self.radarDrawerNP = self.radarDrawer.getRoot()
+        self.radarDrawerNP.reparentTo(radarRoot)
+        self.radarDrawerNP.setTwoSided(True)
+        self.radarDrawerNP.setLightOff()
+        self.radarDrawerNP.setDepthWrite(False)
+
         self.healthBar = healthBarRoot.attachNewNode(cardMaker.generate())
         self.healthBar.setSx(0.05)
 
@@ -187,9 +203,13 @@ class Player(GameObject, ArmedObject):
                                           relief = None,
                                           parent = missileCounterRoot)
 
+        self.maxRadarRange = 500
+        self.radarSize = 0.3
+
         self.updateHealthUI()
         self.updateEnergyUI()
         self.updateMissileUI()
+        self.updateRadar()
 
         self.updatingEffects = []
 
@@ -197,8 +217,6 @@ class Player(GameObject, ArmedObject):
         GameObject.update(self, dt)
 
         self.walking = False
-
-        #print (self.root.getPos(render))
 
         quat = self.root.getQuat(render)
         forward = quat.getForward()
@@ -252,6 +270,7 @@ class Player(GameObject, ArmedObject):
 
         self.updateEnergyUI()
         self.updateHealthUI()
+        self.updateRadar()
 
         #self.root.setH(self.root.getH() - mousePos.x*self.mouseSpeedHori*self.mouseSensitivity)
         #self.actor.setP(self.actor.getP() + mousePos.y*self.mouseSpeedVert*self.mouseSensitivity)
@@ -394,6 +413,43 @@ class Player(GameObject, ArmedObject):
         self.missileCounter["text"] = "M : {0}".format(self.numMissiles)
         self.missileCounter.setText()
         self.missileCounter.resetFrameSize()
+
+    def updateRadar(self):
+        if Common.framework.currentLevel is not None:
+            self.radarDrawer.begin(base.cam, render)
+
+            uvs = Vec2(0, 0)
+            
+            spotSize = 0.015
+
+            self.radarDrawer.tri(Vec3(-spotSize, 0, -spotSize), Vec4(0, 1, 0, 1), uvs,
+                                 Vec3(spotSize, 0, -spotSize), Vec4(0, 1, 0, 1), uvs,
+                                 Vec3(-spotSize, 0, spotSize), Vec4(0, 1, 0, 1), uvs)
+            self.radarDrawer.tri(Vec3(-spotSize, 0, spotSize), Vec4(0, 1, 0, 1), uvs,
+                                 Vec3(spotSize, 0, -spotSize), Vec4(0, 1, 0, 1), uvs,
+                                 Vec3(spotSize, 0, spotSize), Vec4(0, 1, 0, 1), uvs)
+
+            selfForward = Vec3(0, 1, 0)
+
+            for enemy in Common.framework.currentLevel.enemies:
+                enemyPos = enemy.root.getPos(self.root)
+                dist = enemyPos.length()
+                if dist < self.maxRadarRange:
+                    enemyPos.normalize()
+                    anglePerc = selfForward.angleDeg(enemyPos) / 180
+                    enemyPos.setY(0)
+                    enemyPos.normalize()
+                    enemyPos *= anglePerc * self.radarSize
+                    colour = Vec4(1, 0, 0, 1)
+
+                    self.radarDrawer.tri(Vec3(-spotSize, 0, 0) + enemyPos, colour, uvs,
+                                         Vec3(spotSize, 0, 0) + enemyPos, colour, uvs,
+                                         Vec3(0, 0, spotSize) + enemyPos, colour, uvs)
+                    self.radarDrawer.tri(Vec3(spotSize, 0, 0) + enemyPos, colour, uvs,
+                                         Vec3(-spotSize, 0, 0) + enemyPos, colour, uvs,
+                                         Vec3(0, 0, -spotSize) + enemyPos, colour, uvs)
+
+            self.radarDrawer.end()
 
     def addUpdatingEffect(self, effect):
         self.updatingEffects.append(effect)
