@@ -104,8 +104,10 @@ class app(ShowBase):
         self.game_start = 0
         
         skybox = self.loader.load_model('skyboxes/40k_test.gltf')
-        skybox.reparent_to(self.render)
-        skybox.set_scale(100)
+        skybox.reparent_to(self.camera)
+        skybox.setCompass()
+        skybox.setBin("background", 1)
+        skybox.setDepthWrite(False)
         
         aster_bool = False
         
