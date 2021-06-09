@@ -293,7 +293,7 @@ class app(ShowBase):
                         
                     self.camera.set_z(self.camera, self.inertia_z)
                     
-                elif self.keyMap["down"]:
+                if self.keyMap["down"]:
                     if self.inertia_z < 0:
                         self.inertia_z -= self.inc_var * dt
                     
