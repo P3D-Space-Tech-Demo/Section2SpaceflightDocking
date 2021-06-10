@@ -324,7 +324,7 @@ class Player(GameObject, ArmedObject):
                 else:
                     angle = math.acos(relPos.y/relDist)
 
-                if relDist > 200 or angle > 2.356:
+                if relDist > 200 or angle > 1.7453:
                     self.lockedTarget = None
                 else:
 

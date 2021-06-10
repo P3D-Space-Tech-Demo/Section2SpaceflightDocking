@@ -55,12 +55,12 @@ class Rocket(SeekingProjectile):
                  aoeRadius, blastModel,
                  pos, damageByTime)
 
-        self.acceleration = 90
+        self.acceleration = 100
 
 class RocketWeapon(ProjectileWeapon):
     def __init__(self):
         projectile = Rocket("Models/rocket", MASK_INTO_ENEMY,
-                            200, 55, 35, 0.7, 20, 0)
+                            200, 55, 45, 0.7, 20, 0)
         ProjectileWeapon.__init__(self, projectile)
 
         self.firingPeriod = 1

@@ -52,6 +52,7 @@ class GameObject():
         self.acceleration = 300.0
 
         self.inControl = True
+        self.outOfControlTimer = 0
 
         self.walking = False
 
@@ -103,8 +104,13 @@ class GameObject():
 
                     self.velocity += frictionVec
 
-        if not self.inControl and speed < 0.1:
-            self.inControl = True
+        if not self.inControl:
+            if speed < 0.1:
+                self.inControl = True
+            else:
+                self.outOfControlTimer -= dt
+                if self.outOfControlTimer <= 0:
+                    self.inControl = True
 
         if fluid:
             self.root.setFluidPos(self.root.getPos() + self.velocity*dt)
@@ -124,6 +130,7 @@ class GameObject():
         if incomingImpulse is not None and knockback > 0.1:
             self.velocity += incomingImpulse*knockback
             self.inControl = False
+            self.outOfControlTimer = knockback*0.1
             self.walking = False
 
         if dHealth < 0:

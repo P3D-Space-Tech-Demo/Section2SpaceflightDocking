@@ -8,7 +8,7 @@ from CommonValues import *
 
 from Common import Common
 
-import random
+import random, math
 
 class Enemy(GameObject, ArmedObject):
     def __init__(self, pos, modelName, maxHealth, maxSpeed, colliderName, size):
@@ -120,7 +120,7 @@ class FighterEnemy(Enemy):
 
         self.acceleration = 100.0
 
-        self.turnRate = 200.0
+        self.turnRate = 400.0
 
         self.yVector = Vec2(0, 1)
 
@@ -130,7 +130,7 @@ class FighterEnemy(Enemy):
 
         self.state = FighterEnemy.STATE_ATTACK
         self.breakAwayTimer = 0
-        self.breakAwayMaxDuration = 3
+        self.breakAwayMaxDuration = 5
 
         for i in range(4):
             ray = CollisionSegment(0, 0, 0, 0, 1, 0)
@@ -153,17 +153,37 @@ class FighterEnemy(Enemy):
         Enemy.runLogic(self, player, dt)
 
         selfPos = self.root.getPos(render)
+        playerPos = player.root.getPos()
+        playerVel = player.velocity
 
-        vectorToPlayer = player.root.getPos() - selfPos
+        testWeapon = self.weaponSets[0][0]
 
-        distanceToPlayer = vectorToPlayer.length()
+        ### With thanks to a post on GameDev.net for this algorithm.
+        ### Specifically, the post was by "alvaro", and at time of
+        ### writing should be found here:
+        ### https://www.gamedev.net/forums/topic/401165-target-prediction-system-target-leading/3662508/
+        shotSpeed = testWeapon.projectileTemplate.maxSpeed
+
+        vectorToPlayer = playerPos - selfPos
+
+        quadraticA = shotSpeed*shotSpeed - playerVel.lengthSquared()
+        quadraticB = -2*playerVel.dot(vectorToPlayer)
+        quadraticC = -vectorToPlayer.lengthSquared()
+
+        quadraticResult = (quadraticB + math.sqrt(quadraticB*quadraticB - 4*quadraticA*quadraticC)) / (2*quadraticA)
+
+        targetPt = playerPos + playerVel*quadraticResult
+
+        ### End of GameDev.net algorithm
+
+        vectorToTargetPt = targetPt - selfPos
+
+        distanceToPlayer = vectorToTargetPt.length()
 
         quat = self.root.getQuat(render)
         forward = quat.getForward()
 
-        angleToPlayer = forward.angleDeg(vectorToPlayer.normalized())
-
-        testWeapon = self.weaponSets[0][0]
+        angleToPlayer = forward.angleDeg(vectorToTargetPt.normalized())
 
         fireWeapon = False
         if len(self.weaponSets) > 0:
@@ -179,59 +199,21 @@ class FighterEnemy(Enemy):
         if self.inControl:
             self.walking = True
             if self.state == FighterEnemy.STATE_ATTACK:
-                if distanceToPlayer < testWeapon.desiredRange*0.5:
+                if distanceToPlayer < testWeapon.desiredRange*0.3:
                     self.state = FighterEnemy.STATE_BREAK_AWAY
                     self.breakAwayTimer = self.breakAwayMaxDuration
                 else:
-                    self.turnTowards(player, self.turnRate, dt)
+                    self.turnTowards(targetPt, self.turnRate, dt)
             elif self.state == FighterEnemy.STATE_BREAK_AWAY:
                 self.breakAwayTimer -= dt
                 if angleToPlayer < 120:
                     self.turnTowards(selfPos - vectorToPlayer, self.turnRate, dt)
-                if distanceToPlayer > testWeapon.desiredRange*2.5 or self.breakAwayTimer <= 0:
+                if distanceToPlayer > testWeapon.desiredRange*7 or self.breakAwayTimer <= 0:
                     self.state = FighterEnemy.STATE_ATTACK
             elif self.state == FighterEnemy.STATE_FLEE:
                 pass
 
             self.velocity += forward*self.acceleration*dt
-
-
-        """if self.currentWeapon is not None:
-            if distanceToPlayer > self.currentWeapon.desiredRange*0.9:
-                attackControl = self.actor.getAnimControl("attack")
-                if not attackControl.isPlaying():
-                    self.walking = True
-                    quat = self.root.getQuat(render)
-                    forward = quat.getForward()
-                    if vectorToPlayer.dot(forward) > 0 and self.steeringQueue.getNumEntries() > 0:
-                        self.steeringQueue.sortEntries()
-                        entry = self.steeringQueue.getEntry(0)
-                        hitPos = entry.getSurfacePoint(render)
-                        right = quat.getRight()
-                        up = quat.getUp()
-                        dotRight = vectorToPlayer.dot(right)
-                        if STEER_RIGHT in self.steerDirs and dotRight < 0:
-                            self.velocity += right*self.acceleration*dt
-                            self.root.setH(render, self.root.getH(render) + self.turnRateWalking*2*dt)
-                        if STEER_LEFT in self.steerDirs and dotRight >= 0:
-                            self.velocity -= right*self.acceleration*dt
-                            self.root.setH(render, self.root.getH(render) - self.turnRateWalking*2*dt)
-                        if STEER_UP in self.steerDirs:
-                            self.velocity += up*self.acceleration*dt
-                        if STEER_DOWN in self.steerDirs:
-                            self.velocity -= up*self.acceleration*dt
-                    else:
-                        self.turnTowards(player, self.turnRateWalking, dt)
-                        self.velocity += self.root.getQuat(render).getForward()*self.acceleration*dt
-
-                self.endAttacking()
-            else:
-                self.turnTowards(player, self.turnRateStanding, dt)
-
-                self.walking = False
-                self.velocity.set(0, 0, 0)
-
-                self.startAttacking()"""
 
     def cleanup(self):
         for np in self.steeringRayNPs:
