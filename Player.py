@@ -187,6 +187,7 @@ class Player(GameObject, ArmedObject):
         self.radarDrawerNP.setTwoSided(True)
         self.radarDrawerNP.setLightOff()
         self.radarDrawerNP.setDepthWrite(False)
+        self.radarDrawerNP.setTransparency(True)
 
         self.healthBar = healthBarRoot.attachNewNode(cardMaker.generate())
         self.healthBar.setSx(0.05)
@@ -203,7 +204,7 @@ class Player(GameObject, ArmedObject):
                                           relief = None,
                                           parent = missileCounterRoot)
 
-        self.maxRadarRange = 500
+        self.maxRadarRange = 700
         self.radarSize = 0.3
 
         self.updateHealthUI()
@@ -435,12 +436,13 @@ class Player(GameObject, ArmedObject):
                 enemyPos = enemy.root.getPos(self.root)
                 dist = enemyPos.length()
                 if dist < self.maxRadarRange:
+                    distPerc = dist / self.maxRadarRange
                     enemyPos.normalize()
                     anglePerc = selfForward.angleDeg(enemyPos) / 180
                     enemyPos.setY(0)
                     enemyPos.normalize()
                     enemyPos *= anglePerc * self.radarSize
-                    colour = Vec4(1, 0, 0, 1)
+                    colour = Vec4(1, 0, 0, math.sin(max(0, 1 - distPerc)*1.571))
 
                     self.radarDrawer.tri(Vec3(-spotSize, 0, 0) + enemyPos, colour, uvs,
                                          Vec3(spotSize, 0, 0) + enemyPos, colour, uvs,
