@@ -42,6 +42,11 @@ class Enemy(GameObject, ArmedObject):
 
         self.movementNames = ["walk"]
 
+        self.setupExplosion()
+
+    def setupExplosion(self):
+        self.explosion = None
+
     def setFlinchPool(self, minVal, maxVal):
         self.flinchPoolMin = minVal
         self.flinchPoolMax = maxVal
@@ -104,6 +109,13 @@ class Enemy(GameObject, ArmedObject):
 
         if self.attackSound is not None:
             self.attackSound.play()
+
+    def onDeath(self):
+        explosion = self.explosion
+        self.explosion = None
+        explosion.activate(self.velocity, self.root.getPos(render))
+        Common.framework.currentLevel.explosions.append(explosion)
+        self.walking = False
 
     def cleanup(self):
         self.lockColliderNP.clearPythonTag(TAG_OWNER)
@@ -216,6 +228,10 @@ class FighterEnemy(Enemy):
             self.velocity += forward*self.acceleration*dt
 
     def cleanup(self):
+        if self.explosion is not None:
+            self.explosion.cleanup()
+            self.explosion = None
+
         for np in self.steeringRayNPs:
             base.traverser.removeCollider(np)
             np.removeNode()

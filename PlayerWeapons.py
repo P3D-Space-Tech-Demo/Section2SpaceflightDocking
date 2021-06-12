@@ -10,8 +10,10 @@ from direct.actor.Actor import Actor
 from direct.gui.OnscreenText import OnscreenText
 
 from Weapon import Weapon, Projectile, SeekingProjectile, ProjectileWeapon
+from Explosion import Explosion
 
 from CommonValues import *
+from Common import Common
 
 import random, math
 
@@ -56,6 +58,13 @@ class Rocket(SeekingProjectile):
                  pos, damageByTime)
 
         self.acceleration = 100
+
+    def impact(self, impactee):
+        explosion = Explosion(7, 0.3, 0.55, 0)
+        explosion.activate(Vec3(0, 0, 0), self.root.getPos(render))
+        Common.framework.currentLevel.explosions.append(explosion)
+
+        SeekingProjectile.impact(self, impactee)
 
 class RocketWeapon(ProjectileWeapon):
     def __init__(self):

@@ -5,7 +5,6 @@ from Trigger import Trigger
 from Spawner import Spawner
 import SpecificEnemies
 
-from direct.gui.OnscreenText import OnscreenText
 from panda3d.core import TextNode
 
 class Level():
@@ -39,6 +38,8 @@ class Level():
 
         self.triggers = []
 
+        self.explosions = []
+
         self.spawners = {}
         self.spawnerGroups = {}
 
@@ -65,14 +66,6 @@ class Level():
             self.activateSpawner(spawnerName)
 
         self.spawnersToActivate = []
-
-        self.tempIndicator = OnscreenText(text = "Mew",
-                                          mayChange = True,
-                                          fg = (1, 1, 1, 1),
-                                          parent = base.a2dTopLeft,
-                                          pos = (0.1, -0.1, 0),
-                                          scale = 0.07,
-                                          align = TextNode.ALeft)
 
     def interpretGeometry(self):
         for key, callback in self.geometryInterpreters.items():
@@ -169,10 +162,7 @@ class Level():
                 self.enemies = [enemy for enemy in self.enemies if enemy.health > 0]
 
                 for enemy in newlyDeadEnemies:
-                    #enemy.collider.removeNode()
-                    if enemy.inControl:
-                        enemy.velocity.set(0, 0, 0)
-                    enemy.walking = False
+                    enemy.onDeath()
 
                 self.deadEnemies += newlyDeadEnemies
 
@@ -198,7 +188,9 @@ class Level():
                 [blast.cleanup() for blast in self.blasts if blast.timer <= 0]
                 self.blasts = [blast for blast in self.blasts if blast.timer > 0]
 
-                self.tempIndicator.setText("(Temporary) Enemy Count: {0}".format(len(self.enemies)))
+                [explosion.update(dt) for explosion in self.explosions]
+                [explosion.cleanup() for explosion in self.explosions if not explosion.isAlive()]
+                self.explosions = [explosion for explosion in self.explosions if explosion.isAlive()]
 
         [system.update(dt) for system in self.particleSystems]
 

@@ -3,6 +3,7 @@ from panda3d.core import PandaNode, Vec3
 from Enemy import FighterEnemy
 from GameObject import ArmedObject, GameObject, FRICTION
 from Weapon import ProjectileWeapon, Projectile
+from Explosion import Explosion
 
 from CommonValues import *
 
@@ -34,6 +35,9 @@ class BasicEnemy(FighterEnemy):
         self.addWeapon(gun, 0, weaponPoint)
 
         #self.colliderNP.show()
+
+    def setupExplosion(self):
+        self.explosion = Explosion(25, 1.8, 1.25, 0.4)
 
     def update(self, player, dt):
         FighterEnemy.update(self, player, dt)

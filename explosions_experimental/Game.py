@@ -41,8 +41,10 @@ class Game(ShowBase):
         self.explosionCard.setShaderInput("sourceTex1", loader.loadTexture("noise1.png"))
         self.explosionCard.setShaderInput("sourceTex2", loader.loadTexture("noise2.png"))
         self.explosionCard.setShaderInput("duration", 1.25)
+        self.explosionCard.setShaderInput("starDuration", 1)
         self.explosionCard.setShaderInput("expansionFactor", 7)
         self.explosionCard.setShaderInput("rotationRate", 0.2)
+        self.explosionCard.setShaderInput("fireballBittiness", 1.5)
         self.explosionCard.setShaderInput("randomisation1", Vec2(0, 0))
         self.explosionCard.setShaderInput("randomisation2", Vec2(0, 0))
 
