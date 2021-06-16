@@ -9,19 +9,19 @@ from direct.actor.Actor import Actor
 
 from direct.gui.OnscreenText import OnscreenText
 
-from Weapon import Weapon, Projectile, SeekingProjectile, ProjectileWeapon
-from Explosion import Explosion
+from Section2SpaceflightDocking.Weapon import Weapon, Projectile, SeekingProjectile, ProjectileWeapon
+from Section2SpaceflightDocking.Explosion import Explosion
 
-from CommonValues import *
-from Common import Common
+from Section2SpaceflightDocking.CommonValues import *
+from Section2SpaceflightDocking.Common import Common
 
 import random, math
 
 class BlasterWeapon(ProjectileWeapon):
     def __init__(self):
-        projectile = Projectile("Models/blasterShot", MASK_INTO_ENEMY,
+        projectile = Projectile("../Section2SpaceflightDocking/Models/blasterShot", MASK_INTO_ENEMY,
                                 100, 3, 75, 0.5, 0, 10,
-                                0, "Models/blast")
+                                0, "../Section2SpaceflightDocking/Models/blast")
         ProjectileWeapon.__init__(self, projectile)
 
         self.firingPeriod = 0.2
@@ -61,14 +61,14 @@ class Rocket(SeekingProjectile):
 
     def impact(self, impactee):
         explosion = Explosion(7, 0.3, 0.55, 0)
-        explosion.activate(Vec3(0, 0, 0), self.root.getPos(render))
+        explosion.activate(Vec3(0, 0, 0), self.root.getPos(Common.framework.showBase.render))
         Common.framework.currentLevel.explosions.append(explosion)
 
         SeekingProjectile.impact(self, impactee)
 
 class RocketWeapon(ProjectileWeapon):
     def __init__(self):
-        projectile = Rocket("Models/rocket", MASK_INTO_ENEMY,
+        projectile = Rocket("../Section2SpaceflightDocking/Models/rocket", MASK_INTO_ENEMY,
                             200, 55, 45, 0.7, 20, 0)
         ProjectileWeapon.__init__(self, projectile)
 

@@ -1,5 +1,5 @@
 
-from CommonValues import *
+from Section2SpaceflightDocking.CommonValues import *
 
 class Trigger():
     def __init__(self, callbackName, nodePath, onlyOnce, active):

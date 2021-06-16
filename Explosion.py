@@ -1,6 +1,8 @@
 
 from panda3d.core import CardMaker, Shader, Vec3, Vec2, NodePath, ColorBlendAttrib
 
+from Section2SpaceflightDocking.Common import Common
+
 import random
 
 class Explosion():
@@ -24,11 +26,13 @@ class Explosion():
         self.explosionCard.setAttrib(ColorBlendAttrib.make(ColorBlendAttrib.MAdd, ColorBlendAttrib.OIncomingAlpha, ColorBlendAttrib.OOne))
         self.explosionCard.setBillboardPointEye()
 
-        shader = Shader.load(Shader.SL_GLSL, "Shaders/explosionVertex.glsl", "Shaders/explosionFragment.glsl")
+        shader = Shader.load(Shader.SL_GLSL,
+                             "../Section2SpaceflightDocking/Shaders/explosionVertex.glsl",
+                             "../Section2SpaceflightDocking/Shaders/explosionFragment.glsl")
         self.explosionCard.setShader(shader)
 
-        self.explosionCard.setShaderInput("sourceTex1", loader.loadTexture("Shaders/noise1.png"))
-        self.explosionCard.setShaderInput("sourceTex2", loader.loadTexture("Shaders/noise2.png"))
+        self.explosionCard.setShaderInput("sourceTex1", Common.framework.showBase.loader.loadTexture("../Section2SpaceflightDocking/Shaders/noise1.png"))
+        self.explosionCard.setShaderInput("sourceTex2", Common.framework.showBase.loader.loadTexture("../Section2SpaceflightDocking/Shaders/noise2.png"))
 
         self.explosionCard.setShaderInput("duration", duration)
         self.explosionCard.setShaderInput("expansionFactor", expansionFactor)
@@ -50,7 +54,7 @@ class Explosion():
         self.startTime = globalClock.getRealTime()
         self.explosionCard.setShaderInput("startTime", self.startTime)
         self.velocity = velocity
-        self.explosionCard.reparentTo(render)
+        self.explosionCard.reparentTo(Common.framework.showBase.render)
         self.explosionCard.setPos(pos)
 
     def update(self, dt):

@@ -3,10 +3,10 @@ from panda3d.core import BitMask32
 from panda3d.core import Vec3
 from panda3d.core import ColorBlendAttrib
 
-from CommonValues import *
-from Common import Common
+from Section2SpaceflightDocking.CommonValues import *
+from Section2SpaceflightDocking.Common import Common
 
-from GameObject import GameObject
+from Section2SpaceflightDocking.GameObject import GameObject
 
 class Weapon():
     def __init__(self, mask, range, damage, knockback):
@@ -97,10 +97,11 @@ class ProjectileWeapon(Weapon):
 
         weaponNP = owner.weaponNPs[self]
 
-        proj = Projectile.makeRealProjectileFromTemplate(self.projectileTemplate, weaponNP.getPos(render))
-        proj.fly(weaponNP.getQuat(render).getForward())
-        if base.currentLevel is not None:
-            base.currentLevel.projectiles.append(proj)
+        proj = Projectile.makeRealProjectileFromTemplate(self.projectileTemplate,
+                                                         weaponNP.getPos(Common.framework.showBase.render))
+        proj.fly(weaponNP.getQuat(Common.framework.showBase.render).getForward())
+        if Common.framework.currentLevel is not None:
+            Common.framework.currentLevel.projectiles.append(proj)
 
         return proj
 
@@ -139,7 +140,7 @@ class Projectile(GameObject):
             self.blastModel = None
             self.blastModelFile = None
         else:
-            self.blastModel = loader.loadModel(blastModel)
+            self.blastModel = Common.framework.showBase.loader.loadModel(blastModel)
             self.blastModelFile = blastModel
 
     @staticmethod
@@ -168,8 +169,8 @@ class Projectile(GameObject):
         colliderNode.setFromCollideMask(MASK_WALLS | self.mask)
         colliderNode.setIntoCollideMask(0)
 
-        base.pusher.addCollider(self.colliderNP, self.root)
-        base.traverser.addCollider(self.colliderNP, base.pusher)
+        Common.framework.pusher.addCollider(self.colliderNP, self.root)
+        Common.framework.traverser.addCollider(self.colliderNP, Common.framework.pusher)
 
         #self.colliderNP.show()
 
@@ -181,19 +182,19 @@ class Projectile(GameObject):
     def update(self, dt):
         GameObject.update(self, dt, fluid = True)
         if self.range is not None:
-            diff = self.root.getPos(render) - self.startPos
+            diff = self.root.getPos(Common.framework.showBase.render) - self.startPos
             self.currentDistanceSq = diff.lengthSquared()
             if self.currentDistanceSq > self.rangeSq:
                 self.health = 0
 
     def impact(self, impactee):
-        selfPos = self.root.getPos(render)
+        selfPos = self.root.getPos(Common.framework.showBase.render)
         damageVal = -self.damage
         if self.damageByTime:
             damageVal *= globalClock.getDt()
 
         if impactee is not None:
-            impactee.alterHealth(damageVal, (impactee.root.getPos(render) - selfPos).normalized(),  self.knockback,
+            impactee.alterHealth(damageVal, (impactee.root.getPos(Common.framework.showBase.render) - selfPos).normalized(),  self.knockback,
                               self.flinchValue)
 
         if self.aoeRadius > 0:
@@ -207,7 +208,7 @@ class Projectile(GameObject):
             aoeRadiusSq = self.aoeRadius*self.aoeRadius
             for other in Common.framework.currentLevel.enemies:
                 if other is not impactee:
-                    diff = other.root.getPos(render) - selfPos
+                    diff = other.root.getPos(Common.framework.showBase.render) - selfPos
                     distSq = diff.lengthSquared()
                     if distSq < aoeRadiusSq:
                         perc = distSq/aoeRadiusSq
@@ -242,7 +243,7 @@ class SeekingProjectile(Projectile):
     def update(self, dt):
         if self.owner is not None:
             if self.owner.lockedTarget is not None and self.owner.lockedTarget.root is not None:
-                diff = self.owner.lockedTarget.root.getPos(render) - self.root.getPos(render)
+                diff = self.owner.lockedTarget.root.getPos(Common.framework.showBase.render) - self.root.getPos(Common.framework.showBase.render)
                 diff.normalize()
                 self.velocity += diff*self.acceleration*dt
                 self.actor.lookAt(self.velocity)

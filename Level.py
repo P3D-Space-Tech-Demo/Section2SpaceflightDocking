@@ -1,9 +1,12 @@
 
 from panda3d.core import Vec3
-from GameObject import *
-from Trigger import Trigger
-from Spawner import Spawner
-import SpecificEnemies
+
+from Section2SpaceflightDocking.GameObject import *
+from Section2SpaceflightDocking.Trigger import Trigger
+from Section2SpaceflightDocking.Spawner import Spawner
+import Section2SpaceflightDocking.SpecificEnemies as SpecificEnemies
+
+from Section2SpaceflightDocking.Common import Common
 
 from panda3d.core import TextNode
 
@@ -11,11 +14,11 @@ class Level():
     def __init__(self, levelFile):
         self.levelFile = levelFile
 
-        self.geometry = loader.loadModel("Levels/" + levelFile)
-        self.geometry.reparentTo(render)
+        self.geometry = Common.framework.showBase.loader.loadModel("../Section2SpaceflightDocking/Levels/" + levelFile)
+        self.geometry.reparentTo(Common.framework.showBase.render)
 
         try:
-            moduleObj = __import__("Scripts.{0}".format(levelFile), levelFile)
+            moduleObj = __import__("../Section2SpaceflightDocking.Scripts.{0}".format(levelFile), levelFile)
             if moduleObj is not None:
                 self.scriptObj = getattr(moduleObj, levelFile)
         except ImportError as e:
@@ -77,8 +80,8 @@ class Level():
             id = np.getTag("id")
             spawnerIsActive = np.getTag("active") == "True"
             spawnerGroupName = np.getTag("groupName")
-            pos = np.getPos(render)
-            h = np.getH(render)
+            pos = np.getPos(Common.framework.showBase.render)
+            h = np.getH(Common.framework.showBase.render)
             spawnerName = np.getName()
 
             np.removeNode()
@@ -113,12 +116,12 @@ class Level():
             #obj.actor.play("spawn")
         else:
             if obj.auraName is not None:
-                auraPath = "Models/Items/{0}".format(obj.auraName)
+                auraPath = "../Section2SpaceflightDocking/Models/Items/{0}".format(obj.auraName)
             else:
                 auraPath = None
             item = Item(obj.root.getPos() + Vec3(0, 0, 1), auraPath, obj)
             self.items.append(item)
-        obj.root.wrtReparentTo(render)
+        obj.root.wrtReparentTo(Common.framework.showBase.render)
 
     def activateSpawnerGroup(self, groupName):
         spawnerList = self.spawnerGroups.get(groupName, None)
@@ -142,7 +145,7 @@ class Level():
 
     def addBlast(self, model, minSize, maxSize, duration, pos):
         blast = Blast(model, minSize, maxSize, duration)
-        blast.model.reparentTo(render)
+        blast.model.reparentTo(Common.framework.showBase.render)
         blast.model.setPos(pos)
         self.blasts.append(blast)
         blast.update(0)

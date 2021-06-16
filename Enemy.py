@@ -1,12 +1,12 @@
-from GameObject import GameObject, ArmedObject
+
 from panda3d.core import Vec4, Vec3, Vec2, Plane, Point3, BitMask32
 from panda3d.core import CollisionSphere, CollisionNode, CollisionRay, CollisionSegment, CollisionHandlerQueue
 from panda3d.core import TextureStage
 from panda3d.core import ColorBlendAttrib
 
-from CommonValues import *
-
-from Common import Common
+from Section2SpaceflightDocking.GameObject import GameObject, ArmedObject
+from Section2SpaceflightDocking.CommonValues import *
+from Section2SpaceflightDocking.Common import Common
 
 import random, math
 
@@ -18,8 +18,8 @@ class Enemy(GameObject, ArmedObject):
 
         self.colliderNP.node().setFromCollideMask(MASK_WALLS | MASK_FROM_ENEMY)
 
-        base.pusher.addCollider(self.colliderNP, self.root)
-        base.traverser.addCollider(self.colliderNP, base.pusher)
+        Common.framework.pusher.addCollider(self.colliderNP, self.root)
+        Common.framework.traverser.addCollider(self.colliderNP, Common.framework.pusher)
 
         colliderNode = CollisionNode("lock sphere")
         solid = CollisionSphere(0, 0, 0, size*2)
@@ -65,11 +65,12 @@ class Enemy(GameObject, ArmedObject):
             self.flinch()
 
         if dHealth < 0 and incomingImpulse is not None:
-            shield = loader.loadModel("Models/shield")
+            shield = Common.framework.showBase.loader.loadModel("../Section2SpaceflightDocking/Models/shield")
             shield.setScale(self.size)
             shield.reparentTo(self.root)
             shield.setAttrib(ColorBlendAttrib.make(ColorBlendAttrib.MAdd, ColorBlendAttrib.OIncomingAlpha, ColorBlendAttrib.OOne))
-            shield.lookAt(render, self.root.getPos(render) + incomingImpulse)
+            shield.lookAt(Common.framework.showBase.render,
+                          self.root.getPos(Common.framework.showBase.render) + incomingImpulse)
             shield.setBin("unsorted", 1)
             shield.setDepthWrite(False)
             self.shields.append([shield, 0])
@@ -113,7 +114,7 @@ class Enemy(GameObject, ArmedObject):
     def onDeath(self):
         explosion = self.explosion
         self.explosion = None
-        explosion.activate(self.velocity, self.root.getPos(render))
+        explosion.activate(self.velocity, self.root.getPos(Common.framework.showBase.render))
         Common.framework.currentLevel.explosions.append(explosion)
         self.walking = False
 
@@ -159,12 +160,12 @@ class FighterEnemy(Enemy):
 
             self.steeringRayNPs.append(rayNodePath)
 
-        base.traverser.addCollider(rayNodePath, self.steeringQueue)
+        Common.framework.traverser.addCollider(rayNodePath, self.steeringQueue)
 
     def runLogic(self, player, dt):
         Enemy.runLogic(self, player, dt)
 
-        selfPos = self.root.getPos(render)
+        selfPos = self.root.getPos(Common.framework.showBase.render)
         playerPos = player.root.getPos()
         playerVel = player.velocity
 
@@ -192,7 +193,7 @@ class FighterEnemy(Enemy):
 
         distanceToPlayer = vectorToTargetPt.length()
 
-        quat = self.root.getQuat(render)
+        quat = self.root.getQuat(Common.framework.showBase.render)
         forward = quat.getForward()
 
         angleToPlayer = forward.angleDeg(vectorToTargetPt.normalized())
@@ -233,7 +234,7 @@ class FighterEnemy(Enemy):
             self.explosion = None
 
         for np in self.steeringRayNPs:
-            base.traverser.removeCollider(np)
+            Common.framework.traverser.removeCollider(np)
             np.removeNode()
         self.steeringRayNPs = []
         self.steeringQueue = None

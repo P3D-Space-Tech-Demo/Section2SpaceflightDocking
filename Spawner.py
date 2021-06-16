@@ -1,4 +1,6 @@
 
+from Section2SpaceflightDocking.Common import Common
+
 class Spawner():
     def __init__(self, data, pos, h, objIsEnemy):
         if isinstance(data, tuple):
@@ -6,8 +8,8 @@ class Spawner():
         else:
             self.spawnObj = data()
 
-        self.spawnObj.root.setPos(render, pos)
-        self.spawnObj.root.setH(render, h)
+        self.spawnObj.root.setPos(Common.framework.showBase.render, pos)
+        self.spawnObj.root.setH(Common.framework.showBase.render, h)
         self.spawnObj.root.detachNode()
 
         self.objIsEnemy = objIsEnemy

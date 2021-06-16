@@ -9,8 +9,8 @@ from panda3d.core import PointLight
 from panda3d.core import NodePath, PandaNode
 from panda3d.core import Quat
 
-from CommonValues import *
-from Common import Common
+from Section2SpaceflightDocking.CommonValues import *
+from Section2SpaceflightDocking.Common import Common
 
 import math, random
 
@@ -18,7 +18,7 @@ FRICTION = 10.0
 
 class GameObject():
     def __init__(self, pos, modelName, modelAnims, maxHealth, maxSpeed, colliderName, weaponIntoMask, size):
-        self.root = render.attachNewNode(PandaNode("obj"))
+        self.root = Common.framework.showBase.render.attachNewNode(PandaNode("obj"))
 
         self.colliderName = colliderName
 
@@ -27,7 +27,7 @@ class GameObject():
         if modelName is None:
             self.actor = NodePath(PandaNode("actor"))
         elif modelAnims is None:
-            self.actor = loader.loadModel(modelName)
+            self.actor = Common.framework.showBase.loader.loadModel(modelName)
         else:
             self.actor = Actor(modelName, modelAnims)
         self.actor.reparentTo(self.root)
@@ -148,12 +148,12 @@ class GameObject():
 
     def turnTowards(self, target, turnRate, dt):
         if isinstance(target, NodePath):
-            target = target.getPos(render)
+            target = target.getPos(Common.framework.showBase.render)
         elif isinstance(target, GameObject):
-            target = target.root.getPos(render)
-        diff = target - self.root.getPos(render)
+            target = target.root.getPos(Common.framework.showBase.render)
+        diff = target - self.root.getPos(Common.framework.showBase.render)
 
-        selfQuat = self.root.getQuat(render)
+        selfQuat = self.root.getQuat(Common.framework.showBase.render)
         selfForward = selfQuat.getForward()
 
         axis = selfForward.cross(diff.normalized())
@@ -168,7 +168,7 @@ class GameObject():
             self.root.setQuat(newQuat)
 
     def getAngleWithVec(self, vec):
-        forward = self.actor.getQuat(render).getForward()
+        forward = self.actor.getQuat(Common.framework.showBase.render).getForward()
         forward2D = Vec2(forward.x, forward.y)
         vec = Vec2(vec.x, vec.y)
         vec.normalize()
