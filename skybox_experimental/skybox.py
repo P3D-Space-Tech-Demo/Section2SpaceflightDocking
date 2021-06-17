@@ -37,7 +37,6 @@ class app(ShowBase):
             win-size 1680 1050
             window-title P3D Space Tech Demo Skybox Test 1
             show-frame-rate-meter #t
-            framebuffer-srgb #t
             framebuffer-multisample 1
             multisamples 4
             view-frustum-cull 0
