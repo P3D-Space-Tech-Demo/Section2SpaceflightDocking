@@ -89,6 +89,7 @@ class Section2():
 
             if self.player is not None and self.player.health <= 0:
                 self.showBase.gameOver()
+                return Task.done
 
             self.traverser.traverse(self.showBase.render)
 
@@ -145,10 +146,11 @@ class Section2():
         self.showBase.ignore("enemy-into")
 
         self.cleanupLevel()
-        self.showBase = None
         self.showBase.taskMgr.remove(self.updateTask)
+        self.showBase = None
         self.updateTask = None
 
 def initialise(showBase, shipSpec):
     game = Section2(showBase)
     game.startGame(shipSpec)
+    return game

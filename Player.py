@@ -31,7 +31,7 @@ class Player(GameObject, ArmedObject):
                             shipSpec.maxSpeed,
                             "player",
                             MASK_INTO_PLAYER,
-                            4)
+                            2)
         ArmedObject.__init__(self)
 
         self.acceleration = shipSpec.acceleration
@@ -166,6 +166,11 @@ class Player(GameObject, ArmedObject):
         if radarRoot is None or radarRoot.isEmpty():
             radarRoot = self.uiRoot.attachNewNode(PandaNode("radar root"))
             print ("No radar root found!")
+            
+        speedometerRoot = self.cockpit.find("**/speedometer")
+        if speedometerRoot is None or speedometerRoot.isEmpty():
+            speedometerRoot = self.uiRoot.attachNewNode(PandaNode("speedometer root"))
+            print ("No speedometer root found!")
 
         self.radarDrawer = MeshDrawer()
         self.radarDrawer.setBudget(4096)
@@ -183,27 +188,36 @@ class Player(GameObject, ArmedObject):
         self.energyBar = energyBarRoot.attachNewNode(cardMaker.generate())
         self.energyBar.setSx(0.05)
 
-        self.healthBarScalar = 0.002
-        self.energyBarScalar = 0.002
+        self.healthBarScalar = 0.00175
+        self.energyBarScalar = 0.00175
 
         self.missileCounter = DirectLabel(text = "",
                                           text_mayChange = True,
-                                          scale = 0.1,
+                                          scale = 0.09,
                                           relief = None,
                                           parent = missileCounterRoot)
 
         self.maxRadarRange = 700
         self.radarSize = 0.3
 
+        self.speedometer = DirectLabel(text = "",
+                                       text_mayChange = True,
+                                       scale = 0.09,
+                                       relief = None,
+                                       parent = speedometerRoot)
+
         self.updateHealthUI()
         self.updateEnergyUI()
         self.updateMissileUI()
         self.updateRadar()
+        self.updateSpeedometer()
 
         self.updatingEffects = []
 
     def update(self, keys, dt):
         GameObject.update(self, dt)
+
+        self.updateSpeedometer()
 
         self.walking = False
 
@@ -401,9 +415,14 @@ class Player(GameObject, ArmedObject):
         self.energyBar.setColorScale(1.0 - (perc - 0.5)/0.5, min(1, perc/0.5), 0, 1)
 
     def updateMissileUI(self):
-        self.missileCounter["text"] = "M : {0}".format(self.numMissiles)
+        self.missileCounter["text"] = "Missiles:\n{0}".format(self.numMissiles)
         self.missileCounter.setText()
         self.missileCounter.resetFrameSize()
+
+    def updateSpeedometer(self):
+        self.speedometer["text"] = "Speed:\n{0:0=2.0f}m/s".format(self.velocity.length()*2)
+        self.speedometer.setText()
+        self.speedometer.resetFrameSize()
 
     def updateRadar(self):
         if Common.framework.currentLevel is not None:

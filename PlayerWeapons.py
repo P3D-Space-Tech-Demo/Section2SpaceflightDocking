@@ -59,6 +59,15 @@ class Rocket(SeekingProjectile):
 
         self.acceleration = 100
 
+        self.timer = 5
+
+    def update(self, dt):
+        SeekingProjectile.update(self, dt)
+
+        self.timer -= dt
+        if self.timer <= 0:
+            self.impact(None)
+
     def impact(self, impactee):
         explosion = Explosion(7, 0.3, 0.55, 0)
         explosion.activate(Vec3(0, 0, 0), self.root.getPos(Common.framework.showBase.render))
@@ -69,7 +78,7 @@ class Rocket(SeekingProjectile):
 class RocketWeapon(ProjectileWeapon):
     def __init__(self):
         projectile = Rocket("../Section2SpaceflightDocking/Models/rocket", MASK_INTO_ENEMY,
-                            200, 55, 45, 0.7, 20, 0)
+                            None, 55, 45, 0.7, 20, 0)
         ProjectileWeapon.__init__(self, projectile)
 
         self.firingPeriod = 1

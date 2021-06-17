@@ -25,9 +25,10 @@ class BasicEnemy(FighterEnemy):
         FighterEnemy.__init__(self, Vec3(0, 0, 0),
                        "../Section2SpaceflightDocking/Models/enemyFighter",
                               100,
-                              40,
+                              20,
                               "enemy",
-                              8)
+                              4)
+        self.actor.setScale(0.5)
 
         self.deathSound = Common.framework.showBase.loader.loadSfx("../Section2SpaceflightDocking/Sounds/enemyDie.ogg")
 

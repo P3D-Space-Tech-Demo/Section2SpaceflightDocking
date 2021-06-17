@@ -160,12 +160,11 @@ class GameObject():
         axis.normalize()
 
         angle = selfForward.signedAngleDeg(diff.normalized(), axis)
-        if abs(angle) > 0.1:
-            quat = Quat()
-            angle = math.copysign(min(abs(angle), turnRate*dt), angle)
-            quat.setFromAxisAngle(angle, axis)
-            newQuat = selfQuat*quat
-            self.root.setQuat(newQuat)
+        quat = Quat()
+        angle = math.copysign(min(abs(angle), turnRate*dt), angle)
+        quat.setFromAxisAngle(angle, axis)
+        newQuat = selfQuat*quat
+        self.root.setQuat(Common.framework.showBase.render, newQuat)
 
     def getAngleWithVec(self, vec):
         forward = self.actor.getQuat(Common.framework.showBase.render).getForward()

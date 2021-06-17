@@ -133,7 +133,7 @@ class FighterEnemy(Enemy):
 
         self.acceleration = 100.0
 
-        self.turnRate = 400.0
+        self.turnRate = 200.0
 
         self.yVector = Vec2(0, 1)
 
@@ -144,6 +144,11 @@ class FighterEnemy(Enemy):
         self.state = FighterEnemy.STATE_ATTACK
         self.breakAwayTimer = 0
         self.breakAwayMaxDuration = 5
+
+        self.evasionDuration = 2
+        self.evasionDurationVariability = 0.2
+        self.evasionTimer = 0
+        self.evasionDirection = (0, 0)
 
         for i in range(4):
             ray = CollisionSegment(0, 0, 0, 0, 1, 0)
@@ -168,6 +173,10 @@ class FighterEnemy(Enemy):
         selfPos = self.root.getPos(Common.framework.showBase.render)
         playerPos = player.root.getPos()
         playerVel = player.velocity
+        playerQuat = player.root.getQuat(Common.framework.showBase.render)
+        playerForward = playerQuat.getForward()
+        playerUp = playerQuat.getUp()
+        playerRight = playerQuat.getRight()
 
         testWeapon = self.weaponSets[0][0]
 
@@ -195,8 +204,11 @@ class FighterEnemy(Enemy):
 
         quat = self.root.getQuat(Common.framework.showBase.render)
         forward = quat.getForward()
+        up = quat.getUp()
+        right = quat.getRight()
 
         angleToPlayer = forward.angleDeg(vectorToTargetPt.normalized())
+        angleFromPlayer = playerForward.angleDeg(vectorToPlayer.normalized())
 
         fireWeapon = False
         if len(self.weaponSets) > 0:
@@ -218,8 +230,14 @@ class FighterEnemy(Enemy):
                 else:
                     self.turnTowards(targetPt, self.turnRate, dt)
             elif self.state == FighterEnemy.STATE_BREAK_AWAY:
+                self.evasionTimer -= dt
+                if self.evasionTimer <= 0:
+                    self.evasionTimer = self.evasionDuration + random.uniform(-self.evasionDurationVariability, self.evasionDurationVariability)
+                    self.evasionDirection = random.choice([(0, 1), (0, -1), (1, 0), (-1, 0)])
                 self.breakAwayTimer -= dt
-                if angleToPlayer < 120:
+                if angleFromPlayer > 150:
+                    self.turnTowards(selfPos + playerRight*self.evasionDirection[0] + playerUp*self.evasionDirection[1], self.turnRate, dt)
+                elif angleToPlayer < 120:
                     self.turnTowards(selfPos - vectorToPlayer, self.turnRate, dt)
                 if distanceToPlayer > testWeapon.desiredRange*7 or self.breakAwayTimer <= 0:
                     self.state = FighterEnemy.STATE_ATTACK
