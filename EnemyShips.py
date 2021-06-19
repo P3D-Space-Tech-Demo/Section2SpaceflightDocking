@@ -1,4 +1,4 @@
-from panda3d.core import PandaNode, Vec3
+from panda3d.core import PandaNode, Vec3, Vec2
 
 from Section2SpaceflightDocking.Enemy import FighterEnemy
 from Section2SpaceflightDocking.GameObject import ArmedObject, GameObject, FRICTION
@@ -39,7 +39,18 @@ class BasicEnemy(FighterEnemy):
         #self.colliderNP.show()
 
     def setupExplosion(self):
-        self.explosion = Explosion(25, 1.8, 1.25, 0.4)
+        shaderInputs = {
+            "duration" : 1.25,
+            "expansionFactor" : 7,
+            "rotationRate" : 0.2,
+            "fireballBittiness" : 1.8,
+            "starDuration" : 0.4
+        }
+
+        randomVec1 = Vec2(random.uniform(0, 1), random.uniform(0, 1))
+        randomVec2 = Vec2(random.uniform(0, 1), random.uniform(0, 1))
+
+        self.explosion = Explosion(25, "explosion", shaderInputs, "noise", randomVec1, randomVec2)
 
     def update(self, player, dt):
         FighterEnemy.update(self, player, dt)

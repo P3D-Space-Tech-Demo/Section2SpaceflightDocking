@@ -158,6 +158,8 @@ class GameObject():
 
         axis = selfForward.cross(diff.normalized())
         axis.normalize()
+        if axis.lengthSquared() < 0.1:
+            return
 
         angle = selfForward.signedAngleDeg(diff.normalized(), axis)
         quat = Quat()

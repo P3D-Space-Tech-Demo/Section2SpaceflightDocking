@@ -17,9 +17,6 @@ uniform float osg_FrameTime;
 
 out vec4 color;
 
-const vec3 colour1 = vec3(0.8, 0, 0);
-const vec3 colour2 = vec3(1, 1, 1);
-
 void main()
 {
     float starPerc = min(starDuration, osg_FrameTime - startTime) / starDuration;

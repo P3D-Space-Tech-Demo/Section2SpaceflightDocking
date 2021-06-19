@@ -1,6 +1,6 @@
 from panda3d.core import CollisionSphere, CollisionNode, CollisionRay, CollisionSegment, CollisionHandlerQueue, CollisionTraverser
 from panda3d.core import BitMask32
-from panda3d.core import Vec3
+from panda3d.core import Vec3, Vec2
 from panda3d.core import OmniBoundingVolume
 from panda3d.core import Shader
 from panda3d.core import TextNode
@@ -17,11 +17,33 @@ from Section2SpaceflightDocking.Common import Common
 
 import random, math
 
+class BlasterProjectile(Projectile):
+    def __init__(self, model, mask, range, damage, speed, size, knockback, flinchValue,
+                 aoeRadius = 0, blastModel = None,
+                 pos = None, damageByTime = False):
+        Projectile.__init__(self,
+                            model, mask, range, damage, speed, size, knockback, flinchValue,
+                             aoeRadius, blastModel,
+                             pos, damageByTime)
+
+    def impact(self, impactee):
+        shaderInputs = {
+            "duration" : 0.3,
+            "expansionFactor" : 1,
+        }
+
+        explosion = Explosion(3, "blasterImpact", shaderInputs, "noiseRadial", random.uniform(0, 3.152), random.uniform(0, 3.152))
+        explosion.activate(Vec3(0, 0, 0), self.root.getPos(Common.framework.showBase.render))
+        Common.framework.currentLevel.explosions.append(explosion)
+
+        Projectile.impact(self, impactee)
+
 class BlasterWeapon(ProjectileWeapon):
     def __init__(self):
-        projectile = Projectile("../Section2SpaceflightDocking/Models/blasterShot", MASK_INTO_ENEMY,
-                                100, 3, 75, 0.5, 0, 10,
-                                0, "../Section2SpaceflightDocking/Models/blast")
+        projectile = BlasterProjectile("../Section2SpaceflightDocking/Models/blasterShot",
+                                        MASK_INTO_ENEMY,
+                                        100, 3, 75, 0.5, 0, 10, 0,
+                                        "../Section2SpaceflightDocking/Models/blast")
         ProjectileWeapon.__init__(self, projectile)
 
         self.firingPeriod = 0.2
@@ -69,7 +91,18 @@ class Rocket(SeekingProjectile):
             self.impact(None)
 
     def impact(self, impactee):
-        explosion = Explosion(7, 0.3, 0.55, 0)
+        shaderInputs = {
+            "duration" : 0.55,
+            "expansionFactor" : 7,
+            "rotationRate" : 0.2,
+            "fireballBittiness" : 0.3,
+            "starDuration" : 0
+        }
+
+        randomVec1 = Vec2(random.uniform(0, 1), random.uniform(0, 1))
+        randomVec2 = Vec2(random.uniform(0, 1), random.uniform(0, 1))
+
+        explosion = Explosion(7, "explosion", shaderInputs, "noise", randomVec1, randomVec2)
         explosion.activate(Vec3(0, 0, 0), self.root.getPos(Common.framework.showBase.render))
         Common.framework.currentLevel.explosions.append(explosion)
 

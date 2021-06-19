@@ -18,7 +18,7 @@ class Explosion():
 
         return explosionCard
 
-    def __init__(self, size, fireballBittiness, duration, starDuration, rotationRate = 0.2, expansionFactor = 7):
+    def __init__(self, size, shaderName, shaderInputs, inputTextureName, randomVal1, randomVal2):
         self.explosionCard = Explosion.getCard()
         self.explosionCard.setScale(size)
         self.explosionCard.setBin("unsorted", 1)
@@ -27,28 +27,32 @@ class Explosion():
         self.explosionCard.setBillboardPointEye()
 
         shader = Shader.load(Shader.SL_GLSL,
-                             "../Section2SpaceflightDocking/Shaders/explosionVertex.glsl",
-                             "../Section2SpaceflightDocking/Shaders/explosionFragment.glsl")
+                             "../Section2SpaceflightDocking/Shaders/{0}Vertex.glsl".format(shaderName),
+                             "../Section2SpaceflightDocking/Shaders/{0}Fragment.glsl".format(shaderName))
         self.explosionCard.setShader(shader)
 
-        self.explosionCard.setShaderInput("sourceTex1", Common.framework.showBase.loader.loadTexture("../Section2SpaceflightDocking/Shaders/noise1.png"))
-        self.explosionCard.setShaderInput("sourceTex2", Common.framework.showBase.loader.loadTexture("../Section2SpaceflightDocking/Shaders/noise2.png"))
+        for inputName, inputValue in shaderInputs.items():
+            self.explosionCard.setShaderInput(inputName, inputValue)
 
-        self.explosionCard.setShaderInput("duration", duration)
-        self.explosionCard.setShaderInput("expansionFactor", expansionFactor)
-        self.explosionCard.setShaderInput("rotationRate", rotationRate)
-        self.explosionCard.setShaderInput("fireballBittiness", fireballBittiness)
-        self.explosionCard.setShaderInput("starDuration", starDuration)
+        self.explosionCard.setShaderInput("sourceTex1", Common.framework.showBase.loader.loadTexture("../Section2SpaceflightDocking/Shaders/{0}1.png".format(inputTextureName)))
+        self.explosionCard.setShaderInput("sourceTex2", Common.framework.showBase.loader.loadTexture("../Section2SpaceflightDocking/Shaders/{0}2.png".format(inputTextureName)))
 
-        self.explosionCard.setShaderInput("randomisation1", Vec2(random.uniform(0, 1), random.uniform(0, 1)))
-        self.explosionCard.setShaderInput("randomisation2", Vec2(random.uniform(0, 1), random.uniform(0, 1)))
+        self.explosionCard.setShaderInput("randomisation1", randomVal1)
+        self.explosionCard.setShaderInput("randomisation2", randomVal2)
 
-        self.duration = duration
-        self.starDuration = starDuration
+        self.calcFullDuration(shaderInputs)
+
         self.startTime = -1000
         self.explosionCard.setShaderInput("startTime", self.startTime)
 
         self.velocity = Vec3(0, 0, 0)
+
+    def calcFullDuration(self, shaderInputs):
+        self.duration = 0
+        if "duration" in shaderInputs:
+            self.duration += shaderInputs["duration"]
+        if "starDuration" in shaderInputs:
+            self.duration += shaderInputs["starDuration"]
 
     def activate(self, velocity, pos):
         self.startTime = globalClock.getRealTime()
@@ -61,7 +65,7 @@ class Explosion():
         self.explosionCard.setPos(self.explosionCard.getPos() + self.velocity*dt)
 
     def isAlive(self):
-        return (globalClock.getRealTime() - self.startTime) < (self.duration + self.starDuration)
+        return (globalClock.getRealTime() - self.startTime) < (self.duration)
 
     def cleanup(self):
         if self.explosionCard is not None:
